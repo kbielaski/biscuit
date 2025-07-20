@@ -3,7 +3,7 @@ class Recipe {
     var images: [String]
     var rating: Double
     var description: String
-    var ingredients: [IngredientGroup]
+    var ingredients: ObservableArray<IngredientGroup>
     var directions: [String]
     var notes: [String]
     var source: Source?
@@ -20,7 +20,7 @@ class Recipe {
         images: [String] = [],
         rating: Double,
         description: String,
-        ingredients: [IngredientGroup] = [],
+        ingredients: ObservableArray<IngredientGroup> = ObservableArray<IngredientGroup>(array: []),
         directions: [String] = [],
         notes: [String] = [],
         source: Source? = nil,
@@ -53,7 +53,7 @@ let sampleRecipes = [
         rating: 4.5,
         description:
             "A classic Italian pasta dish made with eggs, cheese, pancetta, and pepper.",
-        ingredients: [
+        ingredients: ObservableArray<IngredientGroup>(array: [
             IngredientGroup(
                 heading: "Sauce",
                 items: [
@@ -65,7 +65,7 @@ let sampleRecipes = [
                 heading: "Grains",
                 items: ["1 lb spaghetti", "1 tbsp olive oil", "1/2 cup grated parmesan", "2 large eggs", "1/4 cup pancetta or bacon", "1/2 tsp black pepper", "1 clove garlic", "1/4 cup parsley (optional)", "1/2 tsp red pepper flakes (optional)", "1/4 cup heavy cream (optional)", "1/2 cup peas (optional)", "1/4 cup mushrooms (optional)", "1/4 cup bell pepper (optional)", "1/4 cup onion (optional)" ]
             ),
-        ],
+        ]),
         directions: [
             "Cook spaghetti in boiling water",
             "In a separate pan, cook pancetta until crispy",

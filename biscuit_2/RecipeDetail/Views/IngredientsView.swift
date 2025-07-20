@@ -8,140 +8,128 @@
 import SwiftUI
 
 struct IngredientsView: View {
-    @Binding var ingredientGroups: [IngredientGroup]
-    let editMode: Bool
-    @State private var newIngredientGroup: String = ""
-    @State private var focusedIndex: Int = -1
-    @FocusState private var isCreateIngredientGroupFocused: Bool
+    enum Focusable: CustomStringConvertible, Hashable {
+        case none
+        case row(group: Int, item: Int)
 
-    //    @State var formattedIngredients: [String] = []
-
-    // move groups
-    // deal with headings
-    // edit existing groups
-
-    func deleteIngredientGroup(at offsets: IndexSet) {
-        ingredientGroups.remove(atOffsets: offsets)
-    }
-
-    func move(from source: IndexSet, to destination: Int) {
-        ingredientGroups.move(fromOffsets: source, toOffset: destination)
-    }
-
-    // Make header bold
-    var body: some View {
-        VStack {
-            List {
-                ForEach(
-                    Array(ingredientGroups.enumerated()),
-                    id: \.element.heading
-                ) { index, ingredientGroup in
-                    VStack(alignment: .leading) {
-                        @State var formattedGroup =
-                            ingredientGroup.heading + "\n"
-                            + ingredientGroup.items
-                            .joined(separator: "\n")
-
-                        if !editMode {
-                            Text(
-                                formattedGroup
-                            )
-                        } else if focusedIndex != index {
-                            Text(
-                                formattedGroup
-                            ).onTapGesture {
-                                focusedIndex = index
-                            }
-                        } else {
-                            // nothing
-                        }
-
-                        if editMode && focusedIndex == index {
-                            // maybe add a check to updatee
-
-                            TextEditor(text: $formattedGroup)
-                                .font(.body)
-                                .padding(.horizontal, 5)
-                                .padding(.top, 2)
-                                .frame(
-                                    maxWidth: .infinity,
-                                    maxHeight: .infinity
-                                )
-                                .background(Color.clear)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(
-                                            Color.secondary.opacity(0.2),
-                                            lineWidth: 1
-                                        )
-                                )
-
-                        }
-                    }
-                }.onDelete(perform: deleteIngredientGroup)
-                    .onMove(perform: move)
-                if editMode {
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $newIngredientGroup)
-                            .focused($isCreateIngredientGroupFocused)
-                            .onChange(of: isCreateIngredientGroupFocused) {
-
-                                //                                ingredientGroups.append(
-                                //                                    IngredientGroup(
-                                //                                        header: "",
-                                //                                        items: newIngredientGroup.components(
-                                //                                            separatedBy: "\n"
-                                //                                        ).filter { !$0.isEmpty }
-                                //                                    )
-                                //                                )
-                            }
-                            .font(.body)
-                            .padding(.horizontal, 5)
-                            .padding(.top, 2)
-                            .frame(height: 100)
-                            .background(Color.clear)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(
-                                        Color.secondary.opacity(0.2),
-                                        lineWidth: 1
-                                    )
-                            )
-
-                        if newIngredientGroup.isEmpty {
-                            Text("Enter new ingredient group...")
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 8)
-                        }
-                    }
-
-                }
-                Button(action: {
-                    // Add your action to handle adding a new ingredient group
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title)
-                        .foregroundColor(.accentColor)
-                }
-                .padding(.top, 4)
-                .frame(
-                    maxWidth: .infinity,
-                    alignment: .bottomLeading
-                )
-
+        var description: String {
+            switch self {
+            case .row(let group, let item): return "Row \(group), Item \(item)"
+            default: return "None"
             }
-
-            .listStyle(PlainListStyle())
         }
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
-        .padding(.leading, 12)
     }
 
+    @ObservedObject var ingredientGroups: ObservableArray<IngredientGroup>
+    let editMode: Bool
+    @FocusState var focusedTextField: Focusable?
+
+    // move ingredient
+    // edit headings
+    // add ingredient group
+
+    var body: some View {
+        List {
+            ForEach(
+                Array(ingredientGroups.array.enumerated()),
+                id: \.element.heading
+            ) { groupIndex, ingredientGroup in
+                Section {
+                    ForEach(
+                        Array(ingredientGroup.items.enumerated()),
+                        id: \.element
+                    ) { itemIndex, item in
+                        if !editMode {
+                            Text(item)
+                                .font(.body)
+                                .multilineTextAlignment(.leading)
+                                .padding(.vertical, 2).deleteDisabled(
+                                    !editMode
+                                )
+                        } else {
+                            HStack {
+                                TextField(
+                                    "Edit item",
+                                    text:
+                                        Binding(
+                                            get: {
+                                                ingredientGroups.array[
+                                                    groupIndex
+                                                ]
+                                                .items[itemIndex]
+                                            },
+                                            set: { newValue in
+                                                ingredientGroups.array[
+                                                    groupIndex
+                                                ]
+                                                .items[itemIndex] = newValue
+                                            }
+                                        )
+                                ).focused(
+                                    $focusedTextField,
+                                    equals: Focusable.row(
+                                        group: groupIndex,
+                                        item: itemIndex
+                                    )
+                                )
+                                Spacer()
+
+                                Button(action: {
+                                    // Handle the action for the button
+                                    print("Button tapped for item: \(item)")
+                                }) {
+                                    Image(systemName: "line.3.horizontal")
+                                        .foregroundColor(.gray)
+                                        .padding(.trailing, 8)
+                                }
+                            }.deleteDisabled(!editMode)  // HStack
+
+                        }  // else
+                    }  // List (nested)
+                    .onDelete { indexSet in
+                        ingredientGroups.array[groupIndex].items.remove(
+                            atOffsets: indexSet
+                        )
+                    }
+
+                    if editMode {
+                        Button(action: {
+                            var updateItem = ingredientGroups.array[
+                                groupIndex
+                            ].items
+                            if(updateItem.last?.isEmpty == false) {
+                                updateItem.append("")
+                            }
+                            ingredientGroups.array[groupIndex] =
+                                IngredientGroup(
+                                    heading: ingredientGroup.heading,
+                                    items: updateItem
+                                )
+                            focusedTextField = Focusable.row(
+                                group: groupIndex,
+                                item: updateItem.count - 1
+                            )
+                        }) {
+                            Text("+ Add Ingredient").font(.body)
+                                .foregroundColor(.blue)
+                        }
+                    }
+
+                } header: {
+                    // update header name
+                    Text(ingredientGroup.heading)
+                        .font(.headline)
+                    // add a minus sign to delete group
+                }
+            }
+        }.listStyle(PlainListStyle())
+            .frame(
+                width: UIScreen.main.bounds.width,
+                height: UIScreen.main.bounds.height,
+                alignment: .center
+            ).scrollDisabled(true)
+
+    }
 }
 
 struct IngredientsView_Previews:
@@ -149,7 +137,13 @@ struct IngredientsView_Previews:
 {
     static var previews: some View {
         IngredientsView(
-            ingredientGroups: .constant(sampleRecipes[0].ingredients),
+            ingredientGroups: ObservableArray(array: [
+                IngredientGroup(heading: "Fruits", items: ["Apple", "Banana"]),
+                IngredientGroup(
+                    heading: "Vegetables",
+                    items: ["Carrot", "Broccoli"]
+                ),
+            ]),
             editMode: true
         )
     }

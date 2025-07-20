@@ -5,13 +5,17 @@
 //  Created by kelly on 6/24/25.
 //
 
+import SwiftUI
 
-class IngredientGroup {
+class IngredientGroup: ObservableObject {
     var heading: String
-    var items: [String]
+    @Published var items: [String]
 
     init(heading: String, items: [String]) {
         self.heading = heading
         self.items = items
     }
 }
+
+
+

@@ -17,4 +17,10 @@
     2. Make picker for ingredient measurements
 9. Share recipe
 10. Web app
-11. Export to pdf cookbook
+11. Shareable recipes
+12. Shared grocery list
+13. Export to pdf cookbook
+
+
+Checkboxes for ingredients
+cook mode keeps phone on
