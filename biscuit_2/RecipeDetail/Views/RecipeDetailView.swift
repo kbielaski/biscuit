@@ -19,6 +19,24 @@ struct RecipeDetailView: View {
     @State private var isTitleEditable: Bool = false
     @State private var isDescriptionEditable: Bool = false
     @State private var isBookmarked: Bool = sampleRecipes[0].isBookmarked
+    @State var showErrors: Bool = false
+
+    func validateForm() -> Bool {
+        var isValid = true
+        if editableName.isEmpty {
+            isValid = false
+        } else if validateIngredients() == false {
+            isValid = false
+        }
+
+        return isValid
+    }
+
+    func validateIngredients() -> Bool {
+        return sampleRecipes[0].ingredients.array.firstIndex(where: {
+            $0.isValid() == false
+        }) == nil
+    }
 
     var body: some View {
         NavigationView {
@@ -29,7 +47,7 @@ struct RecipeDetailView: View {
                             images: recipe.images,
                             editMode: editMode
                         )
-                        
+
                         // Move all these statements to either a function or be nested in the component
                         if isTitleEditable || isDescriptionEditable {
                             Color.clear
@@ -40,7 +58,7 @@ struct RecipeDetailView: View {
                                 }.frame(maxHeight: 200)
                         }
                     }
-                    
+
                     if editMode && isTitleEditable {
                         // Put limit on the number of characters
                         TextField("Recipe Name", text: $editableName)
@@ -57,7 +75,7 @@ struct RecipeDetailView: View {
                                 isTitleEditable.toggle()
                             }
                     }
-                    
+
                     ZStack {
                         VStack {
                             RecipeStatsView(
@@ -76,7 +94,7 @@ struct RecipeDetailView: View {
                                 }
                         }
                     }
-                    
+
                     if editMode && isDescriptionEditable {
                         TextEditor(text: $editableDescription)
                             .font(.body)
@@ -99,7 +117,7 @@ struct RecipeDetailView: View {
                                 isDescriptionEditable.toggle()
                             }
                     }
-                    
+
                     ZStack {
                         VStack {
                             Picker("Details", selection: $selectedTab) {
@@ -109,13 +127,14 @@ struct RecipeDetailView: View {
                             }
                             .pickerStyle(.segmented)
                             .padding(.top, 8)
-                            
+
                             Group {
                                 if selectedTab == 0 {
                                     IngredientsView(
                                         ingredientGroups:
-                                            editableIngredients,
-                                        editMode: editMode
+                                            $editableIngredients,
+                                        editMode: editMode,
+                                        showErrors: $showErrors
                                     )
                                 } else if selectedTab == 1 {
                                     DirectionsView(recipe: recipe)
@@ -124,7 +143,7 @@ struct RecipeDetailView: View {
                                 }
                             }
                         }
-                        
+
                         if isTitleEditable || isDescriptionEditable {
                             Color.clear
                                 .contentShape(Rectangle())
@@ -138,11 +157,11 @@ struct RecipeDetailView: View {
             }
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    HStack(spacing: 4){
+                    HStack(spacing: 4) {
                         Button(action: { isBookmarked.toggle() }) {
                             Image(
                                 systemName: isBookmarked
-                                ? "bookmark.fill" : "bookmark"
+                                    ? "bookmark.fill" : "bookmark"
                             )
                             .foregroundColor(.gray)
                         }
@@ -150,7 +169,20 @@ struct RecipeDetailView: View {
                             Image(systemName: "square.and.arrow.up")
                                 .foregroundColor(.gray)
                         }
-                        Button(action: { editMode.toggle() }) {
+                        Button(action: {
+                            print(editableIngredients.array.count)
+                            if editMode {
+                                if validateForm() {
+                                    showErrors = false
+                                    editMode.toggle()
+                                } else {
+                                    showErrors = true
+                                }
+                            } else {
+                                editMode.toggle()
+                            }
+
+                        }) {
                             Image(systemName: editMode ? "checkmark" : "pencil")
                                 .foregroundColor(.gray)
                         }

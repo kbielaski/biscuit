@@ -18,9 +18,20 @@ struct Ingredient: Identifiable, Equatable, Hashable {
     var items: [Ingredient]
     var id = UUID()
     var isExpanded: Bool = true
+    var isRenaming: Bool = false
+    
+    func isValid() -> Bool {
+        return heading.isEmpty ? false : items.count > 0
+    }
     
     init(heading: String) {
         self.heading = heading
+        self.items = []
+    }
+    
+    init(heading: String, isRenaming: Bool) {
+        self.heading = heading
+        self.isRenaming = isRenaming
         self.items = []
     }
 

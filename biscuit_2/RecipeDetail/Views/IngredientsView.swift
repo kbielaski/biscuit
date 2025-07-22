@@ -26,11 +26,11 @@ struct SectionHeader: View {
     @Binding var title: String
     let groupId: UUID
     let editMode: Bool
+    @Binding var isRenaming: Bool
     @FocusState.Binding var focusedTextField: Focusable?
     let deleteIngredientGroup: (_ groupId: UUID) -> Void
     let closeIngredientGroup: (_ groupId: UUID) -> Void
-    // pass in isRenaming
-    @State var isRenaming: Bool = false
+    @Binding var showErrors: Bool
 
     var body: some View {
         if editMode {
@@ -42,29 +42,40 @@ struct SectionHeader: View {
                         .foregroundColor(.gray)
                 }
 
-                if isRenaming {
-                    TextField(
-                        "Section name",
-                        text: $title,
-                        onCommit: {
-                            // Handle the commit action, e.g., save the new title
-                            // needs to be a non-empty string
-                            isRenaming = false
-                        }
-                    ).font(.headline)
-                        .foregroundColor(.secondary)
-                        .focused(
-                            $focusedTextField,
-                            equals: Focusable.section(
-                                group: groupId
+                if isRenaming || showErrors {
+                    VStack(alignment: .leading) {
+                        TextField(
+                            "Section name",
+                            text: $title,
+                            onCommit: {
+                                isRenaming = false
+                            }
+                        ).font(.headline)
+                            .foregroundColor(.secondary)
+                            .focused(
+                                $focusedTextField,
+                                equals: Focusable.section(
+                                    group: groupId
+                                )
+                            ).overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        showErrors && title.isEmpty
+                                            ? Color.red : Color.clear
+                                    ).frame(height: 30).padding(.leading, -4)
                             )
-                        )
+
+                        if showErrors && title.isEmpty {
+                            Text("Section title cannot be empty").font(.caption)
+                                .foregroundColor(.red)
+                        }
+
+                    }
                 } else {
-                    Menu(title) {
+                    Menu {
                         Button(
-                            "Rename",
+                            title.isEmpty ? "Create name" : "Rename",
                             action: {
-                                // make focus the header
                                 isRenaming.toggle()
                                 focusedTextField = Focusable.section(
                                     group: groupId
@@ -79,10 +90,19 @@ struct SectionHeader: View {
                         ) {
                             Text("Remove ingredient section")
                         }
+                    } label: {
+                        if title.isEmpty {
+                            Text("New Section")
+                                .foregroundColor(.secondary.opacity(0.5))
+                        } else {
+                            Text(title)
+                        }
+
                     }.font(.headline)
                         .foregroundColor(.secondary)
 
                 }
+
                 Spacer()
                 Button(action: {}) {
                     Image(systemName: "line.3.horizontal")
@@ -99,13 +119,10 @@ struct SectionHeader: View {
 }
 
 struct IngredientsView: View {
-    @State var ingredientGroups: ObservableArray<IngredientGroup>
+    @Binding var ingredientGroups: ObservableArray<IngredientGroup>
     let editMode: Bool
+    @Binding var showErrors: Bool
     @FocusState var focusedTextField: Focusable?
-
-    // move ingredient
-    // edit headings
-    // add ingredient group
 
     func addIngredient(groupId: UUID, ingredientGroupHeading: String) {
         if let groupIndex = ingredientGroups.array.firstIndex(where: {
@@ -152,7 +169,6 @@ struct IngredientsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-
             List {
                 ForEach(
                     $ingredientGroups.array
@@ -170,6 +186,7 @@ struct IngredientsView: View {
                                     .padding(.vertical, 2).deleteDisabled(
                                         !editMode
                                     )
+                            
                             } else {
                                 HStack {
                                     TextField(
@@ -203,15 +220,20 @@ struct IngredientsView: View {
                             ingredientGroup.items.remove(atOffsets: indexSet)
                         }
                         if editMode {
-                            Button(action: {
-                                addIngredient(
-                                    groupId: ingredientGroup.id,
-                                    ingredientGroupHeading: ingredientGroup
-                                        .heading
-                                )
-                            }) {
-                                Text("+ Add Ingredient").font(.body)
-                                    .foregroundColor(.blue)
+                            VStack(alignment: .leading){
+                                Button(action: {
+                                    addIngredient(
+                                        groupId: ingredientGroup.id,
+                                        ingredientGroupHeading: ingredientGroup
+                                            .heading
+                                    )
+                                }) {
+                                    Text("+ Add Ingredient").font(.body)
+                                        .foregroundColor(.blue)
+                                }
+                                if(showErrors && ingredientGroup.items.count == 0) {
+                                    Text("Ingredient list cannot be empty").font(.caption).foregroundColor(.red)
+                                }
                             }
                         }
                     } header: {
@@ -219,9 +241,11 @@ struct IngredientsView: View {
                             title: $ingredientGroup.heading,
                             groupId: ingredientGroup.id,
                             editMode: editMode,
+                            isRenaming: $ingredientGroup.isRenaming,
                             focusedTextField: $focusedTextField,
                             deleteIngredientGroup: deleteIngredientGroup,
-                            closeIngredientGroup: closeIngredientGroup
+                            closeIngredientGroup: closeIngredientGroup,
+                            showErrors: $showErrors
                         )
                     }
 
@@ -234,11 +258,11 @@ struct IngredientsView: View {
                                 == false
                         {
                             ingredientGroups.array.append(
-                                IngredientGroup(heading: "")
+                                IngredientGroup(heading: "", isRenaming: true)
                             )
-                            let groupId = ingredientGroups.array.last?.id {
+                            if let groupId = ingredientGroups.array.last?.id {
                                 focusedTextField = Focusable.section(
-                                    group:groupId
+                                    group: groupId
                                 )
                             }
                         }
@@ -259,9 +283,8 @@ struct IngredientsView: View {
                 .scrollDisabled(true)
         }.frame(
             width: .infinity,
-            height: editMode
-                ? UIScreen.main.bounds.height  // + 300
-                : UIScreen.main.bounds.height,  // calculate this manually
+            height: UIScreen.main.bounds.height + 300,
+                 // calculate this manually
             alignment: .center
         )
 
@@ -273,14 +296,15 @@ struct IngredientsView_Previews:
 {
     static var previews: some View {
         IngredientsView(
-            ingredientGroups: ObservableArray(array: [
+            ingredientGroups: .constant(ObservableArray(array: [
                 IngredientGroup(heading: "Fruits", items: ["Apple", "Banana"]),
                 IngredientGroup(
                     heading: "Vegetables",
                     items: ["Carrot", "Broccoli"]
                 ),
-            ]),
-            editMode: true
+            ])),
+            editMode: true,
+            showErrors: .constant(true)
         )
     }
 }
