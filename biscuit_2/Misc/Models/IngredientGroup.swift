@@ -6,12 +6,30 @@
 //
 
 import SwiftUI
+import Observation
 
-class IngredientGroup: ObservableObject {
+struct Ingredient: Identifiable, Equatable, Hashable {
+    var name: String
+    let id = UUID()
+}
+
+@Observable class IngredientGroup: Identifiable {
     var heading: String
-    @Published var items: [String]
+    var items: [Ingredient]
+    var id = UUID()
+    var isExpanded: Bool = true
+    
+    init(heading: String) {
+        self.heading = heading
+        self.items = []
+    }
 
     init(heading: String, items: [String]) {
+        self.heading = heading
+        self.items = items.map({ Ingredient(name: $0) })
+    }
+    
+    init(heading: String, items: [Ingredient]) {
         self.heading = heading
         self.items = items
     }

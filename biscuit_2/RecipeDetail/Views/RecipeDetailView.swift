@@ -13,14 +13,15 @@ struct RecipeDetailView: View {
     @State private var editMode = false
     @State private var editableName = sampleRecipes[0].name
     @State private var editableDescription = sampleRecipes[0].description
-    @State private var editableRating = sampleRecipes[0].rating
-    @State private var editableIngredients: ObservableArray<IngredientGroup> = sampleRecipes[0]
+    @State private var editableIngredients: ObservableArray<IngredientGroup> =
+        sampleRecipes[0]
         .ingredients
     @State private var isTitleEditable: Bool = false
     @State private var isDescriptionEditable: Bool = false
+    @State private var isBookmarked: Bool = sampleRecipes[0].isBookmarked
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
+        NavigationView {
             ScrollView {
                 VStack {
                     ZStack {
@@ -28,7 +29,7 @@ struct RecipeDetailView: View {
                             images: recipe.images,
                             editMode: editMode
                         )
-
+                        
                         // Move all these statements to either a function or be nested in the component
                         if isTitleEditable || isDescriptionEditable {
                             Color.clear
@@ -39,7 +40,7 @@ struct RecipeDetailView: View {
                                 }.frame(maxHeight: 200)
                         }
                     }
-
+                    
                     if editMode && isTitleEditable {
                         // Put limit on the number of characters
                         TextField("Recipe Name", text: $editableName)
@@ -56,36 +57,17 @@ struct RecipeDetailView: View {
                                 isTitleEditable.toggle()
                             }
                     }
-
+                    
                     ZStack {
                         VStack {
                             RecipeStatsView(
                                 recipe: recipe,
                                 editMode: editMode
                             )
-
-                            HStack {
-                                ForEach(0..<5) { index in
-                                    Image(
-                                        systemName: index
-                                            < Int(editableRating)
-                                            ? "star.fill" : "star"
-                                    )
-                                    .foregroundColor(
-                                        index < Int(editableRating)
-                                            ? .yellow : .gray
-                                    )
-                                    .onTapGesture {
-                                        if editMode {
-                                            editableRating = Double(
-                                                index + 1
-                                            )
-                                        }
-                                    }
-                                }
-                            }.padding(.top, 2)
                         }
-                        if editMode && (isTitleEditable || isDescriptionEditable) {
+                        if editMode
+                            && (isTitleEditable || isDescriptionEditable)
+                        {
                             Color.clear.frame(maxHeight: 50)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
@@ -94,7 +76,7 @@ struct RecipeDetailView: View {
                                 }
                         }
                     }
-
+                    
                     if editMode && isDescriptionEditable {
                         TextEditor(text: $editableDescription)
                             .font(.body)
@@ -117,17 +99,17 @@ struct RecipeDetailView: View {
                                 isDescriptionEditable.toggle()
                             }
                     }
-
+                    
                     ZStack {
                         VStack {
                             Picker("Details", selection: $selectedTab) {
                                 Text("Ingredients").tag(0)
                                 Text("Directions").tag(1)
-//                                Text("Notes").tag(2)
+                                //                                Text("Notes").tag(2)
                             }
                             .pickerStyle(.segmented)
                             .padding(.top, 8)
-
+                            
                             Group {
                                 if selectedTab == 0 {
                                     IngredientsView(
@@ -142,7 +124,7 @@ struct RecipeDetailView: View {
                                 }
                             }
                         }
-
+                        
                         if isTitleEditable || isDescriptionEditable {
                             Color.clear
                                 .contentShape(Rectangle())
@@ -153,35 +135,32 @@ struct RecipeDetailView: View {
                         }
                     }
                 }
-                    
-                
-
             }
-            .padding(.bottom, 5)
-            
-            Button(action: {
-                editMode.toggle()
-                isTitleEditable = false
-                isDescriptionEditable = false
-            }) {
-                Image(systemName: editMode ? "checkmark" : "pencil")
-                    .font(.system(size: 24))
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .clipShape(Circle())
-                    .shadow(radius: 4)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    HStack(spacing: 4){
+                        Button(action: { isBookmarked.toggle() }) {
+                            Image(
+                                systemName: isBookmarked
+                                ? "bookmark.fill" : "bookmark"
+                            )
+                            .foregroundColor(.gray)
+                        }
+                        Button(action: { print("Share") }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundColor(.gray)
+                        }
+                        Button(action: { editMode.toggle() }) {
+                            Image(systemName: editMode ? "checkmark" : "pencil")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
             }
-            .frame(
-                maxWidth: .infinity,
-                maxHeight: UIScreen.main.bounds.height,
-                alignment: .bottomTrailing
-            )
-            .padding()
-            // show saved success message when check is clicked
         }
-
+        // show saved success message when check is clicked
     }
+
 }
 
 struct RecipeDetailView_Previews:

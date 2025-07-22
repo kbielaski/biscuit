@@ -1,7 +1,7 @@
 class Recipe {
     var name: String
     var images: [String]
-    var rating: Double
+    var isBookmarked: Bool
     var description: String
     var ingredients: ObservableArray<IngredientGroup>
     var directions: [String]
@@ -18,7 +18,7 @@ class Recipe {
     init(
         name: String,
         images: [String] = [],
-        rating: Double,
+        isBookmarked: Bool,
         description: String,
         ingredients: ObservableArray<IngredientGroup> = ObservableArray<IngredientGroup>(array: []),
         directions: [String] = [],
@@ -31,7 +31,7 @@ class Recipe {
     ) {
         self.name = name
         self.images = images
-        self.rating = rating
+        self.isBookmarked = isBookmarked
         // limit size of these fields
         self.description = description
         self.ingredients = ingredients
@@ -50,7 +50,7 @@ let sampleRecipes = [
     Recipe(
         name: "Kelly's Spaghetti Carbonara",
         images: ["spaghetti", "carbonara"],
-        rating: 4.5,
+        isBookmarked: false,
         description:
             "A classic Italian pasta dish made with eggs, cheese, pancetta, and pepper.",
         ingredients: ObservableArray<IngredientGroup>(array: [
@@ -90,28 +90,28 @@ let sampleRecipes = [
     Recipe(
         name: "Chicken Tikka Masala",
         images: ["tikka_masala.jpg"],
-        rating: 4.7,
+        isBookmarked: false,
         description:
             "A popular Indian dish made with marinated chicken in a spiced curry sauce."
     ),
     Recipe(
         name: "Beef Stroganoff",
         images: ["stroganoff.jpg"],
-        rating: 4.3,
+        isBookmarked: false,
         description:
             "A Russian dish of sautéed beef in a creamy mushroom sauce, served over noodles."
     ),
     Recipe(
         name: "Vegetable Stir Fry",
         images: ["stir_fry.jpg"],
-        rating: 4.2,
+        isBookmarked: false,
         description:
             "A quick and healthy dish made with a variety of fresh vegetables stir-fried in a savory sauce."
     ),
     Recipe(
         name: "Chocolate Lava Cake",
         images: ["lava_cake.jpg"],
-        rating: 4.8,
+        isBookmarked: false,
         description:
             "A rich chocolate cake with a gooey molten center, served warm with ice cream."
     ),

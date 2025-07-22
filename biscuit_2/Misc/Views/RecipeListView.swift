@@ -5,7 +5,7 @@ struct RecipeListView: View {
         Recipe(
             name: "Kelly's Spaghetti Carbonara Long Title",
             images: ["spaghetti", "carbonara"],
-            rating: 4.5,
+            isBookmarked: false,
             description:
                 "A classic Italian pasta dish made with eggs, cheese, pancetta, and pepper.",
             ingredients: ObservableArray<IngredientGroup>(array: [
@@ -46,28 +46,28 @@ struct RecipeListView: View {
         Recipe(
             name: "Chicken Tikka Masala",
             images: ["chicken_tikka"],
-            rating: 4.8,
+            isBookmarked: false,
             description:
                 "A popular Indian dish consisting of marinated chicken in a spiced curry sauce."
         ),
         Recipe(
             name: "Beef Tacos",
             images: ["beef_tacos"],
-            rating: 4.2,
+            isBookmarked: false,
             description:
                 "Soft or hard shell tacos filled with seasoned beef, lettuce, cheese, and salsa."
         ),
         Recipe(
             name: "Caesar Salad",
             images: ["caesar_salad"],
-            rating: 4.0,
+            isBookmarked: false,
             description:
                 "A fresh salad with romaine lettuce, croutons, parmesan cheese, and Caesar dressing."
         ),
         Recipe(
             name: "Chocolate Cake",
             images: ["chocolate_cake"],
-            rating: 5.0,
+            isBookmarked: false,
             description:
                 "A rich and moist chocolate cake topped with creamy chocolate frosting."
         ),
