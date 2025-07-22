@@ -59,13 +59,28 @@ struct RecipeDetailView: View {
                         }
                     }
 
-                    if editMode && isTitleEditable {
-                        // Put limit on the number of characters
-                        TextField("Recipe Name", text: $editableName)
-                            .font(.title)
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 5)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    if editMode && (isTitleEditable || editableName.isEmpty) {
+                        VStack(alignment: .leading) {
+                            TextField("Recipe Name", text: $editableName)
+                                .font(.title)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 5)
+                                .textFieldStyle(RoundedBorderTextFieldStyle()).overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            showErrors && editableName.isEmpty
+                                            ? Color.red : Color.clear
+                                        ).frame(height: 40).padding(.horizontal, 12)
+                                ).onChange(of: editableName) {
+                                    isTitleEditable = true
+                                    showErrors = false
+                                }
+                            
+                            if(showErrors && editableName.isEmpty) {
+                                Text("Recipe name cannot be empty").font(.caption)
+                                    .foregroundColor(.red).padding(.leading, 8)
+                            }
+                        }
                     } else {
                         Text(editableName)
                             .font(.title)
