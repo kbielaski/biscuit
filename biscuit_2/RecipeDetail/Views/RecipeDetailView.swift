@@ -20,6 +20,7 @@ struct RecipeDetailView: View {
     @State private var isDescriptionEditable: Bool = false
     @State private var isBookmarked: Bool = sampleRecipes[0].isBookmarked
     @State var showErrors: Bool = false
+    @FocusState var focusedTextField: Focusable?
 
     func validateForm() -> Bool {
         var isValid = true
@@ -59,38 +60,60 @@ struct RecipeDetailView: View {
                         }
                     }
 
+                    // Title section
                     if editMode && (isTitleEditable || editableName.isEmpty) {
                         VStack(alignment: .leading) {
                             TextField("Recipe Name", text: $editableName)
                                 .font(.title)
                                 .multilineTextAlignment(.center)
                                 .padding(.top, 5)
-                                .textFieldStyle(RoundedBorderTextFieldStyle()).overlay(
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .overlay(
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(
                                             showErrors && editableName.isEmpty
-                                            ? Color.red : Color.clear
-                                        ).frame(height: 40).padding(.horizontal, 12)
+                                                ? Color.red : Color.clear
+                                        ).frame(height: 40).padding(
+                                            .horizontal,
+                                            12
+                                        )
                                 ).onChange(of: editableName) {
                                     isTitleEditable = true
                                     showErrors = false
+                                }.focused(
+                                    $focusedTextField,
+                                    equals: Focusable.title
+                                ).onSubmit {
+                                    focusedTextField = Focusable.none
+                                    isTitleEditable = false
                                 }
-                            
-                            if(showErrors && editableName.isEmpty) {
-                                Text("Recipe name cannot be empty").font(.caption)
-                                    .foregroundColor(.red).padding(.leading, 8)
+
+                            if showErrors && editableName.isEmpty {
+                                Text("Recipe name cannot be empty").font(
+                                    .caption
+                                )
+                                .foregroundColor(.red).padding(.leading, 8)
                             }
                         }
-                    } else {
+                    } else if editMode {
                         Text(editableName)
                             .font(.title)
                             .multilineTextAlignment(.leading)
                             .padding(.top, 5)
                             .padding(.horizontal, 5).onTapGesture {
+                                isDescriptionEditable = false
                                 isTitleEditable.toggle()
+                                focusedTextField = Focusable.title
                             }
+                    } else {
+                        Text(editableName)
+                            .font(.title)
+                            .multilineTextAlignment(.leading)
+                            .padding(.top, 5)
+                            .padding(.horizontal, 5)
                     }
 
+                    // Recipe stats section
                     ZStack {
                         VStack {
                             RecipeStatsView(
@@ -110,6 +133,7 @@ struct RecipeDetailView: View {
                         }
                     }
 
+                    // Description section
                     if editMode && isDescriptionEditable {
                         TextEditor(text: $editableDescription)
                             .font(.body)
@@ -123,16 +147,30 @@ struct RecipeDetailView: View {
                                         Color.secondary.opacity(0.2),
                                         lineWidth: 1
                                     )
-                            )
-                    } else {
+                            ).focused(
+                                $focusedTextField,
+                                equals: Focusable.description
+                            ).onSubmit {
+                                focusedTextField = Focusable.none
+                                isDescriptionEditable = false
+                            }
+                    } else if editMode {
                         Text(editableDescription)
                             .font(.body)
                             .padding(.horizontal, 5).padding(.top, 2)
                             .foregroundColor(.secondary).onTapGesture {
                                 isDescriptionEditable.toggle()
+                                isTitleEditable = false
+                                focusedTextField = Focusable.description
                             }
+                    } else {
+                        Text(editableDescription)
+                            .font(.body)
+                            .padding(.horizontal, 5).padding(.top, 2)
+                            .foregroundColor(.secondary)
                     }
 
+                    // Ingredients & Directions section
                     ZStack {
                         VStack {
                             Picker("Details", selection: $selectedTab) {
@@ -171,6 +209,7 @@ struct RecipeDetailView: View {
                 }
             }
             .toolbar {
+                // Top toolbar
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     HStack(spacing: 4) {
                         Button(action: { isBookmarked.toggle() }) {
@@ -185,7 +224,6 @@ struct RecipeDetailView: View {
                                 .foregroundColor(.gray)
                         }
                         Button(action: {
-                            print(editableIngredients.array.count)
                             if editMode {
                                 if validateForm() {
                                     showErrors = false

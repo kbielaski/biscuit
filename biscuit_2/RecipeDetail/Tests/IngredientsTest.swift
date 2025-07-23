@@ -5,13 +5,13 @@
 //  Created by kelly on 7/23/25.
 //
 
-import Testing
+// import Testing
 
 struct IngredientsTests {
     // All elements are on the screen
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    }
+//    @Test func example() async throws {
+//        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+//    }
     
     // Empty state shows option to add ingredients
     

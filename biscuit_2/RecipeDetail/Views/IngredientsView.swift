@@ -7,21 +7,6 @@
 
 import SwiftUI
 
-enum Focusable: CustomStringConvertible, Hashable {
-    case none
-    case section(group: UUID)
-    case row(group: UUID, item: UUID)
-
-    var description: String {
-        switch self {
-        case .row(let group, let item):
-            return "Row \(group.description), Item \(item.description)"
-        case .section(let group): return "Group \(group.description)"
-        default: return "None"
-        }
-    }
-}
-
 struct SectionHeader: View {
     @Binding var title: String
     let groupId: UUID
@@ -54,7 +39,7 @@ struct SectionHeader: View {
                             .foregroundColor(.secondary)
                             .focused(
                                 $focusedTextField,
-                                equals: Focusable.section(
+                                equals: Focusable.ingredientSection(
                                     group: groupId
                                 )
                             ).overlay(
@@ -77,7 +62,7 @@ struct SectionHeader: View {
                             title.isEmpty ? "Create name" : "Rename",
                             action: {
                                 isRenaming.toggle()
-                                focusedTextField = Focusable.section(
+                                focusedTextField = Focusable.ingredientSection(
                                     group: groupId
                                 )
                             }
@@ -141,7 +126,7 @@ struct IngredientsView: View {
                     items: updateItem
                 )
             if let itemId = updateItem.last?.id {
-                focusedTextField = Focusable.row(
+                focusedTextField = Focusable.ingredientRow(
                     group: ingredientGroups.array[groupIndex].id,
                     item: itemId
                 )
@@ -202,7 +187,7 @@ struct IngredientsView: View {
                                             )
                                     ).focused(
                                         $focusedTextField,
-                                        equals: Focusable.row(
+                                        equals: Focusable.ingredientRow(
                                             group: ingredientGroup.id,
                                             item: item.id
                                         )
@@ -261,7 +246,7 @@ struct IngredientsView: View {
                                 IngredientGroup(heading: "", isRenaming: true)
                             )
                             if let groupId = ingredientGroups.array.last?.id {
-                                focusedTextField = Focusable.section(
+                                focusedTextField = Focusable.ingredientSection(
                                     group: groupId
                                 )
                             }
