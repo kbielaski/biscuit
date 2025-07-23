@@ -151,6 +151,40 @@ struct IngredientsView: View {
             ingredientGroups.array.remove(at: groupIndex)
         }
     }
+    
+    func calculateViewHeight() -> CGFloat {
+        // How to find height
+//        .overlay(
+//            RoundedRectangle(cornerRadius: 0)
+//                .stroke(.blue).frame(height: 70)
+//        )
+        var result =  CGFloat(0)
+        if editMode {
+            result += 70 // Create new ingredient section button
+        }
+        ingredientGroups.array.forEach { ingredientGroup in
+            // add header
+            if (!showErrors) {
+                result += 50
+            } else {
+                result += 70
+            }
+            
+            // add ingredient
+            if ingredientGroup.isExpanded {
+                result += CGFloat(ingredientGroup.items.count * 45)
+            }
+            
+            // + Add Ingredient button
+            if (ingredientGroup.isExpanded && !showErrors) {
+                result += 50
+            } else if (ingredientGroup.isExpanded) {
+                result += 55
+            }
+        }
+        
+        return result
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -268,8 +302,7 @@ struct IngredientsView: View {
                 .scrollDisabled(true)
         }.frame(
             width: .infinity,
-            height: UIScreen.main.bounds.height + 300,
-                 // calculate this manually
+            height: calculateViewHeight(),
             alignment: .center
         )
 
