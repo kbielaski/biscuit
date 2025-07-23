@@ -11,7 +11,13 @@ import SwiftUI
 struct biscuit_2App: App {
     var body: some Scene {
         WindowGroup {
-            RecipeListView()
+            NavBarView()
         }
+    }
+}
+
+#Preview {
+    VStack {
+        NavBarView()
     }
 }

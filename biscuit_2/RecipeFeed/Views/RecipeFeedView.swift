@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RecipeListView: View {
+struct RecipeFeedView: View {
     let recipes = [
         Recipe(
             name: "Kelly's Spaghetti Carbonara Long Title",
@@ -101,10 +101,10 @@ struct RecipeListView: View {
     }
 }
 
-struct RecipeListView_Previews:
+struct RecipeFeedView_Previews:
     PreviewProvider
 {
     static var previews: some View {
-        RecipeListView()
+        RecipeFeedView()
     }
 }
